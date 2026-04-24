@@ -1,38 +1,98 @@
+<div align="center">
+
 # prod-sec
 
-`prod-sec` is a Codex skill for authorized, production-grade security auditing of web applications, APIs, infrastructure, cloud-adjacent surfaces, and development pipelines. It gives an AI agent a structured penetration-testing workflow with runnable probes, reference playbooks, and report generation.
+### Authorized active security auditing for AI agents
 
-This is not a passive checklist. The skill guides the agent through controlled recon, enumeration, exploit validation, impact assessment, and remediation reporting.
+`prod-sec` turns a general-purpose AI agent into a structured security assessment operator for authorized web, API, infrastructure, cloud-adjacent, and supply-chain audits.
 
-## GitHub Repository Metadata
+![Skill](https://img.shields.io/badge/AI_Agent-Skill-111827?style=for-the-badge)
+![Security](https://img.shields.io/badge/Security-Auditing-0F766E?style=for-the-badge)
+![OWASP](https://img.shields.io/badge/OWASP-Coverage-7C3AED?style=for-the-badge)
+![Mode](https://img.shields.io/badge/Safe_Mode-Default-2563EB?style=for-the-badge)
 
-- **Repository name:** `prod-sec`
-- **Display name:** ProdSec - Authorized Security Auditing Skill
-- **Short description:** Authorized active security auditing skill for Codex agents.
-- **GitHub description:** Active offensive and defensive security auditing skill for authorized web, API, infrastructure, cloud, and supply-chain assessments.
-- **Suggested topics:** `codex-skill`, `security-audit`, `penetration-testing`, `web-security`, `api-security`, `owasp`, `red-team`, `blue-team`, `devsecops`, `vulnerability-assessment`
+</div>
 
-## Responsible Use
+> [!IMPORTANT]
+> Use this skill only on systems you own or are explicitly authorized to assess. The scripts and workflows are intended for bounded validation, remediation, and reporting. They are not intended for unauthorized access, persistence, evasion, data theft, destructive testing, or abuse.
 
-Use this skill only on systems you own or are explicitly authorized to assess. The included tools are designed for bounded validation, not unauthorized access.
+## Overview
 
-The skill intentionally defaults to `--safe-mode` where active probes could be noisy or risky. Higher-risk testing should be done only inside an approved scope, with test accounts, rate limits, an agreed test window, and a rollback/contact plan.
+`prod-sec` is a production-grade security auditing skill with progressive references and runnable test scripts. It goes beyond passive code review by guiding the agent through controlled reconnaissance, enumeration, exploit validation, impact analysis, and reporting.
 
-Do not use this repository to attack third-party systems, bypass access controls, persist access, exfiltrate real data, evade monitoring, deploy malware, or perform destructive testing.
+The skill is designed for:
 
-## What It Finds
+- Local and staging web application audits
+- Authorized API and authentication testing
+- Security hardening reviews with active validation
+- OWASP-style vulnerability assessment
+- Internal red-team/blue-team collaboration
+- Evidence-backed remediation reports
+- Multi-agent skill distribution through `SKILL.md`, `skill.sh`, `skills/llms.txt`, and platform instruction files
 
-- Web application issues: SQL injection indicators, reflected XSS, CSRF exposure, CORS mistakes, missing security headers, open redirects, SSRF, LFI/path traversal, JWT weaknesses.
-- Authentication and identity issues: weak session handling, MFA enforcement gaps, OAuth/OIDC misconfiguration, rate-limit gaps, role/tenant authorization probes.
-- API issues: GraphQL introspection, webhook spoofing/replay, schema validation gaps, abuse-prevention weaknesses.
-- Infrastructure and crypto issues: TLS/certificate weaknesses, exposed HTTP methods, cloud storage exposure signals, container management exposure, weak password hashes, leaked secrets.
-- Program-level issues: supply chain, CI/CD, database security, monitoring, resilience, compliance, and advanced AI/mobile/IoT/browser risks through progressive reference guides.
+It is not a "hack anything" toolkit. It is an authorized assessment framework with safe-mode defaults and explicit scope controls.
+
+## Agent And Platform Support
+
+The canonical skill lives at `SKILL.md`. Compatibility files are included so other agent platforms can discover or follow the same operating rules:
+
+| Platform or convention | File |
+| --- | --- |
+| Codex / OpenAI-style skills | `SKILL.md`, `agents/openai.yaml` |
+| skills.sh-style local registry | `skill.sh` |
+| LLM/agent registry hints | `llms.txt`, `skills/llms.txt` |
+| OpenAI Codex / general agents | `AGENTS.md`, `CODEX.md` |
+| Claude Code | `CLAUDE.md` |
+| Gemini CLI | `GEMINI.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor | `.cursorrules` |
+| Cline | `.clinerules` |
+| Windsurf | `.windsurfrules` |
+| Aider | `AIDER.md` |
+| Augment | `.augment/rules.md` |
+| Kilo Code | `.kilocode/rules.md` |
+| OpenCode | `.opencode/AGENTS.md` |
+| Continue | `.continue/rules/prod-sec.md` |
+
+All platform files point back to the same responsible-use model: authorized targets only, safe mode first, minimal proof, no persistence, no evasion, no real data exfiltration, and evidence-backed remediation.
+
+## What It Can Find
+
+| Area | Examples |
+| --- | --- |
+| Web security | SQL injection indicators, reflected XSS, CSRF exposure, CORS mistakes, missing headers, open redirects, SSRF, LFI/path traversal |
+| Authentication | weak session handling, MFA enforcement gaps, OAuth/OIDC misconfiguration, JWT weaknesses, rate-limit gaps |
+| API security | GraphQL introspection, webhook spoofing/replay, schema validation gaps, mass-assignment indicators, abuse-prevention gaps |
+| Infrastructure | TLS/certificate issues, exposed HTTP methods, DNS/email-auth signals, container management exposure |
+| Crypto and secrets | weak hash formats, leaked secrets, JWT claim/algorithm issues, certificate hardening gaps |
+| DevSecOps | supply-chain review, CI/CD risk areas, dependency and secret-scanning workflows |
+| Monitoring | logging quality, detection coverage, canary requests, incident-response evidence |
+| Advanced surfaces | AI/LLM prompt injection, mobile/API trust boundaries, IoT/browser/blockchain risk prompts |
+
+## Safety Model
+
+`prod-sec` is built to reduce accidental misuse:
+
+- `--safe-mode` is available on active scripts where applicable.
+- Findings distinguish confirmed exploitability from unconfirmed signals.
+- Scripts emit JSON snippets for traceable reporting.
+- The methodology requires authorization, target scope, excluded actions, rate limits, and minimal proof.
+- Reports require redacted secrets, exact payloads, evidence, impact, remediation, and retest commands.
+
+No repository wording can guarantee that every platform or target owner will permit every test. To reduce account, legal, and operational risk, test only systems you control or have written permission to assess, prefer local/staging targets, keep payloads non-destructive, and stop if instability, warnings, or rate limits appear.
 
 ## Repository Layout
 
 ```text
 prod-sec/
 |-- SKILL.md
+|-- AGENTS.md
+|-- AIDER.md
+|-- CLAUDE.md
+|-- CODEX.md
+|-- GEMINI.md
+|-- skill.sh
+|-- llms.txt
 |-- references/
 |   |-- 00-methodology.md
 |   |-- 01-auth-session.md
@@ -57,6 +117,13 @@ prod-sec/
     |-- recon/
     |-- report/
     `-- web/
+|-- skills/
+|   |-- llms.txt
+|   `-- prod-sec/
+|       `-- SKILL.md
+`-- .github/
+    |-- copilot-instructions.md
+    `-- FUNDING.yml
 ```
 
 ## Quick Start
@@ -69,7 +136,7 @@ bash scripts/recon/dns_recon.sh example.com --safe-mode
 bash scripts/recon/port_scan.sh example.com --safe-mode
 python3 scripts/recon/tech_fingerprint.py https://example.com --safe-mode
 
-# Web/API checks
+# Web and API checks
 python3 scripts/web/header_audit.py https://example.com --safe-mode
 python3 scripts/web/cors_tester.py https://example.com/api/session --safe-mode
 python3 scripts/api/rate_limit_test.py https://example.com/api/session --safe-mode
@@ -80,46 +147,60 @@ python3 scripts/report/cvss_scorer.py --vector CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/
 python3 scripts/report/generate_report.py findings.json --out report
 ```
 
-## Using As A Codex Skill
+## Using As An Agent Skill
 
-Place this folder where Codex can discover skills, then trigger it with requests like:
+Place this folder where your agent can discover skills, then invoke it with scoped prompts:
 
 ```text
 Use prod-sec to audit my local app at http://localhost:5173 and API at http://localhost:3001.
-Use prod-sec to perform an authorized security assessment of staging.example.com in safe mode.
+Use prod-sec to perform an authorized safe-mode security assessment of staging.example.com.
 Use prod-sec to generate a security report from these JSON findings.
 ```
 
-The entry point is `SKILL.md`. Detailed attack guidance is loaded progressively from `references/` only when relevant.
+The main entry point is `SKILL.md`. For registry-style tools, run:
 
-## Safety Model
+```bash
+source ./skill.sh prod-sec
+```
 
-The skill is designed to reduce accidental misuse:
+Detailed testing guidance is loaded progressively from `references/` only when relevant.
 
-- `--safe-mode` exists on active scripts where applicable.
-- Findings distinguish confirmed exploitability from unconfirmed signals.
-- Scripts output JSON snippets for traceable reporting.
-- The methodology requires authorization, scope, excluded actions, rate limits, and minimal proof.
-- Report guidance requires redaction of secrets and exact remediation steps.
+## Phased Workflow
 
-No security tool can guarantee that a platform, hosting provider, or target owner will permit a test. To reduce account or platform risk, keep testing limited to systems you control, retain written permission, prefer local/staging targets, avoid destructive payloads, and stop if rate limits, warnings, or instability appear.
+1. **Recon**: identify hosts, DNS, ports, technologies, TLS, and exposed services.
+2. **Enum**: map routes, forms, APIs, auth flows, headers, CORS, sessions, roles, and data paths.
+3. **Attack**: run controlled payloads and active checks inside the approved scope.
+4. **Post-Exploit**: validate bounded impact, chainability, privilege boundaries, and detection.
+5. **Report**: generate severity-sorted findings with CVSS, PoC, impact, remediation, and retest steps.
 
 ## Requirements
 
-- Python 3 standard library.
-- Bash for shell scripts.
-- Optional external tools for deeper authorized testing: `curl`, `nmap`, `sqlmap`, `ffuf`, `nuclei`, `nikto`, `wfuzz`, `jwt_tool`.
-- Optional Python packages for future extensions: `requests`, `beautifulsoup4`, `cryptography`, `pyjwt`.
+- Python 3 standard library
+- Bash for shell scripts
+- Optional external tools for deeper authorized testing: `curl`, `nmap`, `sqlmap`, `ffuf`, `nuclei`, `nikto`, `wfuzz`, `jwt_tool`
+- Optional Python packages for future extensions: `requests`, `beautifulsoup4`, `cryptography`, `pyjwt`
 
 The current Python scripts are intentionally standard-library-first for portability.
 
-## GitHub Publishing Checklist
+## Example Report Workflow
 
-- Keep `SKILL.md` concise and under 200 lines.
-- Do not commit local reports, generated caches, virtual environments, or secrets.
-- Redact target names, tokens, cookies, and screenshots before publishing examples.
-- Add a license only after deciding the intended reuse terms.
-- Run validation before release:
+Collect JSON snippets from script output into `findings.json`, then generate Markdown and HTML:
+
+```bash
+python3 scripts/report/generate_report.py findings.json --out report
+```
+
+The report generator produces:
+
+- Executive summary
+- Severity-sorted findings
+- Description, proof of concept, impact, CVSS, and remediation
+- Coverage matrix
+- Retest-oriented structure
+
+## Publishing Checklist
+
+Before publishing or tagging a release:
 
 ```bash
 python -m compileall -q scripts
@@ -127,8 +208,15 @@ bash -lc 'find scripts -name "*.sh" -print0 | xargs -0 -n1 bash -n'
 python scripts/report/cvss_scorer.py --vector CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
 ```
 
+Also verify:
+
+- `SKILL.md` stays concise and under 200 lines.
+- No local reports, caches, virtual environments, `.env` files, tokens, cookies, screenshots, or target-specific evidence are committed.
+- Examples use owned, local, staging, or documentation targets only.
+- Any discovered secrets are redacted and rotated before publication.
+
 ## Status
 
-This repository is useful for real authorized assessments today, especially as an AI-agent operating framework. It will find common and subtle security issues when the target exposes testable surfaces and the operator provides valid scope, test accounts, and enough context.
+`prod-sec` is useful for real authorized assessments today, especially as an AI-agent operating framework. It can identify common and subtle security issues when the operator provides valid scope, safe test data, test accounts, and enough target context.
 
-It is not a replacement for human authorization, legal review, production change control, or manual validation of high-impact findings.
+It does not replace written authorization, legal review, production change control, or manual validation of high-impact findings.

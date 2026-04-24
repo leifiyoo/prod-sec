@@ -1,0 +1,3 @@
+This repository is prod-sec, an authorized active security auditing skill.
+
+Read SKILL.md first. Use references/ progressively. Keep scripts safe-mode-first and bounded. Maintain responsible-use language and avoid features that enable unauthorized access, stealth, persistence, malware, credential theft, destructive testing, or real data exfiltration.

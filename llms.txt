@@ -1,0 +1,1 @@
+prod-sec: Authorized active security auditing skill for AI agents. Performs scoped safe-mode-first assessment of web apps, APIs, auth/session flows, infrastructure, crypto/secrets, supply chain, monitoring, and advanced surfaces. Canonical entry point: SKILL.md.
