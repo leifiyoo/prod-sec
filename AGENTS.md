@@ -1,26 +1,26 @@
 # Agent Instructions: prod-sec
 
-This repository contains `prod-sec`, an authorized active security auditing skill for AI agents.
+This repository contains `prod-sec`, a defensive secure-code-review skill for AI agents.
 
 ## Source Of Truth
 
 - Read `SKILL.md` first.
 - Load topic-specific files from `references/` only when needed.
-- Run tools from `scripts/` only against explicitly authorized targets.
+- Run tools from `scripts/code/` only against local repositories or files the user owns or is allowed to assess.
 - Use `skill.sh` or `skills/llms.txt` when an agent platform expects a registry.
 
 ## Required Behavior
 
-1. Establish authorization, scope, target URLs/hosts, excluded actions, credentials, and rate limits before active testing.
-2. Prefer `--safe-mode` first.
-3. Attempt controlled validation where authorized, but avoid destructive actions.
-4. Mark unproven issues as `Unconfirmed`.
-5. Report exact evidence, payloads, impact, remediation, and retest commands.
+1. Establish repository path, application type, security goals, and excluded files.
+2. Run local review helpers where useful.
+3. Inspect surrounding source code before confirming a finding.
+4. Mark uncertain items as `Needs Review`.
+5. Report exact file/line evidence, impact, remediation, and safe retest steps.
 
 ## Prohibited Behavior
 
-- Do not test third-party systems without explicit permission.
-- Do not persist access, evade monitoring, exfiltrate real data, deploy malware, run destructive payloads, or bypass legal controls.
+- Do not run exploit payloads, brute-force attempts, recon, or unauthorized network tests.
+- Do not add malware, persistence, evasion, credential theft, destructive actions, or real data exfiltration logic.
 - Do not publish secrets, cookies, tokens, screenshots with sensitive data, or target-specific evidence.
 
 ## Verification
@@ -29,5 +29,7 @@ Before claiming the skill is ready or changed correctly, run:
 
 ```bash
 python -m compileall -q scripts
-bash -lc 'find scripts -name "*.sh" -print0 | xargs -0 -n1 bash -n'
+python scripts/code/static_code_audit.py . --json-out static-findings.json
+python scripts/code/secrets_audit.py . --json-out secret-findings.json
+python scripts/code/dependency_audit.py . --json-out dependency-findings.json
 ```

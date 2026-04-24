@@ -1,105 +1,82 @@
 ---
 name: prod-sec
 description: >
-  Active offensive + defensive security auditing skill. Performs full-spectrum
-  penetration testing of web applications, APIs, infrastructure, and cloud environments.
-  Covers OWASP Top 10, authentication, injection, cryptography, supply chain, and advanced
-  attack surfaces. Uses real tools and scripts - not just code review. Trigger for any
-  security audit, pentest, vulnerability assessment, or hardening task.
+  Defensive production security review skill for AI agents. Reviews local code,
+  configuration, dependencies, secrets, authentication design, data flows, and
+  deployment posture. Produces evidence-backed findings and remediation guidance
+  without offensive exploitation, target scanning, brute forcing, or unauthorized
+  network activity. Trigger for secure code review, security audit, hardening,
+  threat modeling, dependency review, secrets review, or GitHub-safe AppSec tasks.
 ---
 
 # Prod Sec
 
-Use this skill only for systems the user is authorized to test. Establish scope, target URLs,
-credentials, rate limits, and excluded actions before testing live systems. Prefer `--safe-mode`
-first, then expand only when the user authorizes higher-risk checks.
+Use this skill to review code and configuration the user owns or has permission
+to assess. Do not run exploit payloads, brute-force attempts, recon against third
+parties, or active attacks. Prefer local repository analysis, framework-aware
+review, safe dependency checks, and clear remediation.
 
-## Responsible Use Guardrails
+## Operating Model
 
-- Require explicit authorization and a bounded target scope before active testing.
-- Do not test third-party systems, production accounts, or external networks without written permission.
-- Keep `--safe-mode` enabled by default; escalate only for approved test windows and test data.
-- Do not persist access, evade detection, exfiltrate real data, deploy malware, or bypass legal controls.
-- Stop testing if scope is unclear, service health degrades, or a destructive effect is possible.
-- Report impact with minimal proof, redacted secrets, and remediation steps.
+1. **Scope**: identify repo path, application type, sensitive areas, deployment model, and excluded files.
+2. **Map**: inspect auth, authorization, input handling, data access, secrets, dependencies, CI/CD, and config.
+3. **Analyze**: run local audit scripts, read relevant code, trace user-controlled data, and verify framework defaults.
+4. **Validate**: confirm findings from source evidence, tests, configs, logs, or safe local checks only.
+5. **Report**: rank severity, cite files/lines, explain impact, provide exact fixes, and include retest steps.
 
-## Execution Model
-
-1. **Recon**: identify hosts, DNS, ports, technologies, TLS, and exposed services.
-2. **Enum**: map routes, forms, APIs, auth flows, headers, CORS, sessions, roles, and data paths.
-3. **Attack**: run controlled exploits and manual payloads. Confirm with observable impact.
-4. **Post-Exploit**: validate scope-limited impact, chaining, privilege boundaries, and detection.
-5. **Report**: score, evidence, remediation, retest status, and coverage matrix.
-
-The agent must actually execute scripts and tools against the target when authorized, not merely
-describe what could be done. When in doubt, attempt the exploit in a controlled manner and document
-the outcome. Mark any unproven issue as `Unconfirmed`.
+Mark findings as `Confirmed` only when source evidence demonstrates the issue.
+Mark uncertain issues as `Needs Review`. Do not claim exploitability without proof.
 
 ## Quick Start
 
 ```bash
-# Recon
-bash scripts/recon/dns_recon.sh TARGET_HOST --safe-mode
-bash scripts/recon/subdomain_enum.sh TARGET_HOST --safe-mode
-bash scripts/recon/port_scan.sh TARGET_HOST --safe-mode
-python3 scripts/recon/tech_fingerprint.py TARGET_URL --safe-mode
+# Local code review helpers
+python3 scripts/code/static_code_audit.py PATH_TO_REPO --json-out static-findings.json
+python3 scripts/code/secrets_audit.py PATH_TO_REPO --json-out secret-findings.json
+python3 scripts/code/dependency_audit.py PATH_TO_REPO --json-out dependency-findings.json
 
-# Web attack surface
-python3 scripts/web/header_audit.py TARGET_URL --safe-mode
-python3 scripts/web/cors_tester.py TARGET_URL --safe-mode
-python3 scripts/web/sqli_test.py TARGET_URL --param id --safe-mode
-python3 scripts/web/xss_fuzzer.py TARGET_URL --param q --safe-mode
-python3 scripts/web/ssrf_probe.py TARGET_URL --param url --safe-mode
-python3 scripts/web/lfi_tester.py TARGET_URL --param file --safe-mode
-python3 scripts/web/open_redirect_scan.py TARGET_URL --param next --safe-mode
-python3 scripts/web/jwt_attack.py TARGET_JWT --safe-mode
-
-# Auth and API
-python3 scripts/auth/bruteforce_sim.py TARGET_URL --username test --wordlist passwords.txt --safe-mode
-python3 scripts/auth/session_fixation_test.py TARGET_URL --safe-mode
-python3 scripts/auth/mfa_bypass_test.py TARGET_URL --safe-mode
-python3 scripts/auth/oauth_test.py TARGET_URL --safe-mode
-python3 scripts/api/rate_limit_test.py TARGET_URL --safe-mode
-python3 scripts/api/graphql_introspection.py TARGET_URL --safe-mode
-python3 scripts/api/api_fuzz.py TARGET_URL --safe-mode
-python3 scripts/api/webhook_spoof_test.py TARGET_URL --safe-mode
-
-# Infra, crypto, report
-bash scripts/infra/tls_audit.sh TARGET_HOST --safe-mode
-bash scripts/infra/http_methods_test.sh TARGET_URL --safe-mode
-python3 scripts/infra/cloud_enum.py TARGET_HOST --safe-mode
-bash scripts/infra/docker_escape_check.sh TARGET_HOST --safe-mode
-python3 scripts/crypto/secrets_scanner.py PATH_OR_URL --safe-mode
-python3 scripts/report/generate_report.py findings.json --out report
+# Report helpers
 python3 scripts/report/cvss_scorer.py
+python3 scripts/report/generate_report.py findings.json --out report
 ```
 
 ## Decision Tree
 
-- **Recon, scope, chaining, reporting workflow** -> load `references/00-methodology.md` and run `scripts/recon/*`.
-- **Authentication, sessions, MFA, OAuth, access control** -> load `references/01-auth-session.md` and run `scripts/auth/*`.
-- **SQL/NoSQL/command/LDAP/XML injection, deserialization, RCE** -> load `references/02-injection-attacks.md` and run `scripts/web/sqli_test.py`, `scripts/api/api_fuzz.py`, plus sqlmap when authorized.
-- **XSS, CSRF, clickjacking, open redirect, prototype pollution** -> load `references/03-xss-csrf-clickjacking.md` and run `scripts/web/xss_fuzzer.py`, `csrf_poc_gen.py`, `open_redirect_scan.py`.
-- **SSRF, XXE, LFI/RFI, traversal** -> load `references/04-ssrf-xxe-lfi-rfi.md` and run `scripts/web/ssrf_probe.py`, `lfi_tester.py`.
-- **TLS, certificates, JWT, keys, hashing, secrets** -> load `references/05-crypto-secrets.md` and run `scripts/crypto/*`, `scripts/web/jwt_attack.py`, `scripts/infra/tls_audit.sh`.
-- **REST, GraphQL, webhooks, rate limits, API auth** -> load `references/06-api-graphql-rest.md` and run `scripts/api/*`.
-- **Infra, DNS, cloud, containers, reverse proxy, email auth** -> load `references/07-infra-cloud-container.md` and run `scripts/infra/*`, `scripts/recon/*`.
-- **Database access, encryption, backups, DLP, auditing** -> load `references/08-database-security.md` and run injection/API tests plus DB-specific commands with provided credentials.
-- **SAST/DAST/SCA, CI/CD, SBOM, IaC, artifact signing** -> load `references/09-supply-chain-cicd.md` and run `scripts/crypto/secrets_scanner.py` plus local dependency scanners.
-- **Logging, SIEM, IDS/IPS, incident response** -> load `references/10-monitoring-detection.md` and perform canary requests while checking logs.
-- **IAM, RBAC, SSO, PAM, federation, Zero Trust** -> load `references/11-identity-access.md` and run auth/API role tests.
-- **Backups, DDoS posture, ransomware, compliance** -> load `references/12-resilience-compliance.md` and run safe readiness checks only.
-- **AI/LLM, mobile, IoT, browser, blockchain, side-channel, PQC** -> load `references/13-advanced-ai-mobile-iot.md` and run focused safe probes.
+- **Overall workflow or report structure** -> load `references/00-methodology.md`.
+- **Authentication, sessions, MFA, OAuth, access control** -> load `references/01-auth-session.md`.
+- **Injection risk in source code** -> load `references/02-injection-attacks.md` and run `scripts/code/static_code_audit.py`.
+- **XSS, CSRF, clickjacking controls** -> load `references/03-xss-csrf-clickjacking.md`.
+- **SSRF, XXE, file access, path traversal controls** -> load `references/04-ssrf-xxe-lfi-rfi.md`.
+- **Crypto, secrets, JWT, certificates** -> load `references/05-crypto-secrets.md` and run `scripts/code/secrets_audit.py`.
+- **REST, GraphQL, webhooks, rate limits** -> load `references/06-api-graphql-rest.md`.
+- **Infra, cloud, containers, reverse proxy, DNS/email auth** -> load `references/07-infra-cloud-container.md`.
+- **Database security** -> load `references/08-database-security.md`.
+- **Dependencies, CI/CD, SBOM, IaC, artifact signing** -> load `references/09-supply-chain-cicd.md` and run `scripts/code/dependency_audit.py`.
+- **Logging, detection, incident response** -> load `references/10-monitoring-detection.md`.
+- **IAM, RBAC, SSO, PAM, federation, Zero Trust** -> load `references/11-identity-access.md`.
+- **Backups, resilience, compliance** -> load `references/12-resilience-compliance.md`.
+- **AI/LLM, mobile, IoT, browser, blockchain, side-channel, PQC readiness** -> load `references/13-advanced-ai-mobile-iot.md`.
 - **Final report** -> load `references/14-reporting-template.md` and run `scripts/report/generate_report.py`.
+
+## Review Rules
+
+- Read the code path that handles each risky behavior before writing a finding.
+- Cite exact files and line numbers whenever possible.
+- Prefer framework-native fixes over custom security logic.
+- Check both server-side enforcement and client-side assumptions.
+- Review authorization at object, action, tenant, and workflow boundaries.
+- Review secrets in source, history notes, example env files, CI variables, and logs.
+- Review dependency manifests and lockfiles; recommend native audit commands.
+- Review security-relevant defaults: cookies, CORS, CSP, TLS, headers, rate limits, logging, and error handling.
+- Include tests or retest steps that verify the fix without attacking live systems.
 
 ## Severity
 
-- **Critical**: unauthenticated RCE, auth bypass to admin, mass data access, secrets enabling takeover, exploitable supply-chain compromise. Usually CVSS >= 9.0.
-- **High**: account takeover, stored XSS with privileged impact, SQLi reading sensitive data, SSRF to metadata, broken object-level authorization. Usually CVSS 7.0-8.9.
-- **Medium**: reflected XSS requiring interaction, weak TLS fallback, limited info disclosure, missing rate limits with bounded impact. Usually CVSS 4.0-6.9.
-- **Low**: hardening gaps, missing non-critical headers, verbose errors without sensitive data. Usually CVSS 0.1-3.9.
-- **Info**: observations, tested controls, non-exploitable behavior, and defense-in-depth improvements.
+- **Critical**: source evidence of auth bypass, secret enabling takeover, unsafe deserialization/RCE path, cross-tenant data access, or supply-chain compromise. Usually CVSS >= 9.0.
+- **High**: broken object-level authorization, unsafe command/query construction reachable from user input, stored XSS sink, weak session/JWT validation, or exposed privileged config. Usually CVSS 7.0-8.9.
+- **Medium**: reflected XSS risk, CSRF-sensitive state change, missing rate limits, weak crypto choice, verbose error leakage, or insecure headers with plausible impact. Usually CVSS 4.0-6.9.
+- **Low**: hardening gaps, defense-in-depth improvements, incomplete logging, or low-impact configuration issues. Usually CVSS 0.1-3.9.
+- **Info**: tested controls, non-exploitable observations, and documentation improvements.
 
-Use CVSS v3.1 as the baseline, then adjust narrative risk for exploit chainability, business impact,
-data sensitivity, exposure, and detection gaps. Always include evidence, exact payload, response
-indicator, impact, remediation, and retest command.
+Use CVSS v3.1 as a baseline, then adjust narrative risk for business impact,
+data sensitivity, exposure, tenant boundaries, and detection coverage.

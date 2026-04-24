@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Generate Markdown and HTML security reports from JSON findings.
+Generate Markdown and HTML defensive security review reports from JSON findings.
 
 Input may be a JSON list, an object with a findings key, or JSONL containing
 script snippets. Output includes executive summary, severity-sorted findings,
-proof of concept, impact, CVSS, remediation, and a coverage matrix.
+source evidence, impact, CVSS, remediation, and a coverage matrix.
 """
 import argparse
 import html
@@ -14,8 +14,8 @@ from pathlib import Path
 
 ORDER = {"Critical": 0, "High": 1, "Medium": 2, "Low": 3, "Info": 4}
 DOMAINS = [
-    "Recon", "Authentication", "Authorization", "Session", "Injection", "XSS/CSRF",
-    "SSRF/LFI", "Crypto", "API", "Infrastructure", "Cloud", "Database",
+    "Code Review", "Authentication", "Authorization", "Session", "Injection", "XSS/CSRF",
+    "Server-Side Request/File Access", "Crypto", "API", "Infrastructure", "Cloud", "Database",
     "Supply Chain", "Monitoring", "Identity", "Resilience", "Compliance", "Advanced",
 ]
 
@@ -47,13 +47,13 @@ def load_findings(path):
         if not isinstance(item, dict):
             continue
         normalized.append({
-            "title": item.get("title", "Untitled finding"),
+            "title": item.get("title", item.get("id", "Untitled finding")),
             "severity": item.get("severity", "Info"),
             "description": item.get("description", item.get("evidence", "")),
-            "poc": item.get("poc", ""),
+            "evidence": item.get("evidence", item.get("poc", "")),
             "impact": item.get("impact", ""),
             "cvss": item.get("cvss", ""),
-            "remediation": item.get("remediation", "Implement the control described by the finding and retest with the original payload."),
+            "remediation": item.get("remediation", "Implement the control described by the finding and retest with a safe local check."),
             "domain": item.get("domain", infer_domain(item)),
             "status": item.get("status", "Confirmed" if item.get("severity") not in ("Info",) else "Observed"),
         })
@@ -65,13 +65,13 @@ def infer_domain(item):
     for needle, domain in [
         ("auth", "Authentication"), ("session", "Session"), ("sqli", "Injection"),
         ("injection", "Injection"), ("xss", "XSS/CSRF"), ("csrf", "XSS/CSRF"),
-        ("ssrf", "SSRF/LFI"), ("lfi", "SSRF/LFI"), ("jwt", "Crypto"),
+        ("ssrf", "Server-Side Request/File Access"), ("lfi", "Server-Side Request/File Access"), ("jwt", "Crypto"),
         ("tls", "Crypto"), ("api", "API"), ("graphql", "API"), ("cloud", "Cloud"),
         ("docker", "Infrastructure"), ("secret", "Supply Chain"), ("rate", "API"),
     ]:
         if needle in text:
             return domain
-    return "Recon"
+    return "Code Review"
 
 
 def risk_rating(findings):
@@ -116,11 +116,11 @@ def markdown(findings):
             "**Description**",
             finding["description"] or "No description supplied.",
             "",
-            "**Proof of Concept**",
-            f"```text\n{finding['poc'] or 'No PoC supplied.'}\n```",
+            "**Source Evidence**",
+            f"```text\n{finding['evidence'] or 'No source evidence supplied.'}\n```",
             "",
             "**Impact**",
-            finding["impact"] or "Impact should be confirmed from affected data, privilege, and exploit chainability.",
+            finding["impact"] or "Impact should be confirmed from affected data, privilege, exposure, and trust boundary.",
             "",
             "**Remediation**",
             finding["remediation"],

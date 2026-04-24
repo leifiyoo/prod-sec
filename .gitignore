@@ -7,6 +7,8 @@ venv/
 env/
 .env
 .env.*
+*-findings.json
+report/
 !.env.example
 findings*.json
 report/

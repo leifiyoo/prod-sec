@@ -1,5 +1,5 @@
 Read SKILL.md before working in this repository.
 
-This is an authorized security auditing skill. Keep all changes aligned with safe-mode-first, scoped, non-destructive assessment. Do not add unauthorized-access, persistence, evasion, malware, credential-theft, destructive, or real-data-exfiltration behavior.
+This is a defensive secure-code-review skill. Keep all changes aligned with local repository analysis, structured evidence, remediation, and reporting. Do not add exploit scanners, brute-force tools, recon tools, payload fuzzers, unauthorized-access, persistence, evasion, malware, credential-theft, destructive, or real-data-exfiltration behavior.
 
 When editing scripts, preserve structured output and graceful error handling. When editing docs, keep the responsible-use positioning clear.

@@ -1,40 +1,33 @@
 # Reporting Template
 
 ## What to Check
-Ensure every tested domain, executed script, manual payload, exploit result, severity decision, remediation, owner, and retest status is captured. Distinguish confirmed vulnerabilities from unconfirmed hypotheses and defense-in-depth observations.
+Produce an evidence-backed report with summary, scope, coverage, findings, severity, file/line evidence, impact, remediation, owner, and safe retest steps.
 
-## How to Test (Active)
-1. Collect JSON snippets from scripts into `findings.json`.
-2. Score findings:
-   `python3 scripts/report/cvss_scorer.py`
-3. Generate final artifacts:
-   `python3 scripts/report/generate_report.py findings.json --out report`
-4. Validate the report includes executive summary, severity-sorted findings, PoC, impact, CVSS, remediation, evidence, and coverage matrix.
-5. Retest fixed findings with the exact original payload and command.
+## How to Test (Defensive)
+1. Read the relevant source files, routes, handlers, middleware, configuration, and tests.
+2. Run local helpers when relevant:
+   - `python3 scripts/code/static_code_audit.py PATH_TO_REPO --json-out static-findings.json`
+   - `python3 scripts/code/secrets_audit.py PATH_TO_REPO --json-out secret-findings.json`
+   - `python3 scripts/code/dependency_audit.py PATH_TO_REPO --json-out dependency-findings.json`
+3. Confirm each signal by inspecting surrounding code and framework behavior.
+4. Classify uncertain items as `Needs Review`; classify only source-backed issues as `Confirmed`.
 
 ## What Good Looks Like (Pass Criteria)
-The report is reproducible, evidence-backed, sorted by severity, useful to executives and engineers, and includes tested controls with pass/fail status. Every confirmed issue has a concrete fix and retest command.
+Controls are enforced server-side, framework defaults are used safely, sensitive data is protected, dependencies are maintained, and tests or configuration prove the intended security behavior.
 
 ## What Bad Looks Like (Fail Criteria)
-Generic advice, missing payloads, no proof of exploitability, no affected endpoint, unscored issues, no coverage matrix, no distinction between confirmed and unconfirmed, screenshots without raw evidence, and remediation that cannot be implemented directly.
+Security depends only on client-side checks, user input reaches sensitive sinks without validation or binding, secrets appear in source, authorization is missing at object or tenant boundaries, or configuration disables important protections.
 
-## Exploitation Proof of Concept
-Each finding must include:
-```text
-Command: curl -isk 'https://target/path?x=PAYLOAD'
-Observed: 200 response reflected payload in executable context
-Impact: attacker-controlled JavaScript runs in victim session
-Retest: rerun command and verify encoded inert output
-```
+## Proof From Code
+Provide minimal source evidence instead of an exploit: file path, line number, relevant snippet, data-flow explanation, affected trust boundary, and why the framework does or does not mitigate the issue.
 
 ## Edge Cases & Hidden Traps
-Low-severity findings can become critical when chained. Reports often understate business logic flaws because no CVE exists. Screenshots without timestamps and request IDs are weak evidence. Retests must verify the root cause, not just the single payload.
+Check second-order data flows, background jobs, webhook handlers, admin-only routes, multi-tenant filters, cache keys, generated code, default middleware order, preview deployments, test fixtures, and CI-only behavior.
 
 ## Remediation
-Use specific code/config changes, owner, priority, and validation steps. Include short-term containment and long-term prevention. For repeated classes, require secure-by-default framework changes and regression tests.
+Use framework-native controls, parameterized APIs, centralized authorization helpers, safe defaults, secret managers, maintained dependencies, tests that fail before the fix, and deployment configuration that enforces the intended control.
 
 ## References
-- CVSS v3.1 Specification: https://www.first.org/cvss/v3.1/specification-document
-- OWASP Risk Rating: https://owasp.org/www-community/OWASP_Risk_Rating_Methodology
-- CWE Mapping: https://cwe.mitre.org/
-- Common Vulnerability Scoring System: https://www.first.org/cvss/
+- OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- CWE: https://cwe.mitre.org/

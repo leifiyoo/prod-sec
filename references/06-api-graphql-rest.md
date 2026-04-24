@@ -1,42 +1,33 @@
-# API, GraphQL, REST, and Webhooks
+# API Security Review
 
 ## What to Check
-Test API authentication, authorization, object and function-level access, schema validation, rate limiting, API gateway policy, OAuth/JWT validation, GraphQL introspection, batching, mass assignment, webhook signatures, abuse prevention, version drift, and secure logging.
+Review REST and GraphQL authorization, schema validation, rate-limit design, webhook signature checks, error handling, pagination, filtering, and mass-assignment controls.
 
-## How to Test (Active)
-1. Run:
-   `python3 scripts/api/rate_limit_test.py https://target/api/login --safe-mode`
-   `python3 scripts/api/graphql_introspection.py https://target/graphql --safe-mode`
-   `python3 scripts/api/api_fuzz.py https://target/api/resource --safe-mode`
-   `python3 scripts/api/webhook_spoof_test.py https://target/webhook --safe-mode`
-2. Replay requests across users and roles.
-3. Try mass assignment fields: `role`, `isAdmin`, `tenantId`, `price`, `balance`, `status`.
-4. For GraphQL, test introspection, aliases for rate-limit bypass, nested query depth, and resolver authorization.
-5. For webhooks, omit signature, alter timestamp, replay payload, and use wrong algorithm.
+## How to Test (Defensive)
+1. Read the relevant source files, routes, handlers, middleware, configuration, and tests.
+2. Run local helpers when relevant:
+   - `python3 scripts/code/static_code_audit.py PATH_TO_REPO --json-out static-findings.json`
+   - `python3 scripts/code/secrets_audit.py PATH_TO_REPO --json-out secret-findings.json`
+   - `python3 scripts/code/dependency_audit.py PATH_TO_REPO --json-out dependency-findings.json`
+3. Confirm each signal by inspecting surrounding code and framework behavior.
+4. Classify uncertain items as `Needs Review`; classify only source-backed issues as `Confirmed`.
 
 ## What Good Looks Like (Pass Criteria)
-Authentication on all non-public APIs, deny-by-default authorization per object/action, strict schemas, unknown fields rejected, consistent rate limits by account/IP/token/device, GraphQL depth/complexity limits, introspection disabled or access-controlled in production, webhook HMAC with timestamp and replay prevention.
+Controls are enforced server-side, framework defaults are used safely, sensitive data is protected, dependencies are maintained, and tests or configuration prove the intended security behavior.
 
 ## What Bad Looks Like (Fail Criteria)
-Unauthenticated sensitive routes, BOLA/IDOR, admin functions callable by normal users, client-controlled `tenantId`, accepted unknown fields, unlimited login/API calls, GraphQL introspection exposing private types, batching bypasses limits, webhook accepted without valid signature, and verbose API errors leaking internals.
+Security depends only on client-side checks, user input reaches sensitive sinks without validation or binding, secrets appear in source, authorization is missing at object or tenant boundaries, or configuration disables important protections.
 
-## Exploitation Proof of Concept
-Mass assignment:
-```bash
-curl -sk -X PATCH 'https://target/api/me' \
-  -H 'Content-Type: application/json' -H 'Authorization: Bearer USER_TOKEN' \
-  --data '{"displayName":"prodsec","role":"admin","tenantId":"other"}'
-```
-If forbidden fields change or affect authorization, impact is confirmed. Use only test accounts.
+## Proof From Code
+Provide minimal source evidence instead of an exploit: file path, line number, relevant snippet, data-flow explanation, affected trust boundary, and why the framework does or does not mitigate the issue.
 
 ## Edge Cases & Hidden Traps
-Check old API versions, mobile-only endpoints, GraphQL resolvers that skip service-layer auth, API gateway policies that differ by path casing or trailing slash, HTTP method override, batch endpoints, async jobs, webhook retries, idempotency key reuse, and cache poisoning through API responses.
+Check second-order data flows, background jobs, webhook handlers, admin-only routes, multi-tenant filters, cache keys, generated code, default middleware order, preview deployments, test fixtures, and CI-only behavior.
 
 ## Remediation
-Centralize API authorization, enforce schemas and reject unknown fields, implement object ownership checks, apply gateway and application rate limits, validate JWT/OAuth claims, sign webhooks with HMAC and timestamp tolerance, block replay, cap GraphQL depth/complexity, and add abuse-case tests.
+Use framework-native controls, parameterized APIs, centralized authorization helpers, safe defaults, secret managers, maintained dependencies, tests that fail before the fix, and deployment configuration that enforces the intended control.
 
 ## References
-- OWASP API Security Top 10: https://owasp.org/API-Security/
-- GraphQL Security: https://cheatsheetseries.owasp.org/cheatsheets/GraphQL_Cheat_Sheet.html
-- CWE-639 Authorization Bypass Through User-Controlled Key: https://cwe.mitre.org/data/definitions/639.html
-- CWE-770 Allocation Without Limits: https://cwe.mitre.org/data/definitions/770.html
+- OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- CWE: https://cwe.mitre.org/

@@ -1,41 +1,33 @@
 # Methodology
 
 ## What to Check
-Confirm scope, authorization, target ownership, excluded actions, credentials, rate limits, business-critical paths, data classification, and logging contacts. Map the full attack surface from DNS through application workflows, APIs, cloud assets, CI/CD, identity, database paths, monitoring, and resilience controls.
+Plan scope, map architecture, run local review helpers, inspect risky code paths, validate with source evidence, and report prioritized remediation. Never perform unauthorized network testing or exploit attempts.
 
-## How to Test (Active)
-1. Record scope and start with non-invasive probes:
-   `bash scripts/recon/dns_recon.sh example.com --safe-mode`
-   `bash scripts/recon/subdomain_enum.sh example.com --safe-mode`
-   `bash scripts/recon/port_scan.sh example.com --safe-mode`
-   `python3 scripts/recon/tech_fingerprint.py https://example.com --safe-mode`
-2. Build a target map from observed links, forms, headers, API docs, robots.txt, sitemap.xml, GraphQL endpoints, and JavaScript bundles.
-3. Execute domain-specific scripts for each discovered surface, beginning in safe mode.
-4. For every suspected vulnerability, attempt a minimal exploit that proves impact without damaging data.
-5. Chain findings: weak CORS plus token storage, open redirect plus OAuth, SSRF plus metadata access, IDOR plus predictable IDs, stored XSS plus admin session.
-6. Run canary requests and confirm whether application, WAF, SIEM, and incident processes detect them.
+## How to Test (Defensive)
+1. Read the relevant source files, routes, handlers, middleware, configuration, and tests.
+2. Run local helpers when relevant:
+   - `python3 scripts/code/static_code_audit.py PATH_TO_REPO --json-out static-findings.json`
+   - `python3 scripts/code/secrets_audit.py PATH_TO_REPO --json-out secret-findings.json`
+   - `python3 scripts/code/dependency_audit.py PATH_TO_REPO --json-out dependency-findings.json`
+3. Confirm each signal by inspecting surrounding code and framework behavior.
+4. Classify uncertain items as `Needs Review`; classify only source-backed issues as `Confirmed`.
 
 ## What Good Looks Like (Pass Criteria)
-All tests are scoped, rate-limited, logged, reproducible, and tied to a control. Sensitive actions require authorization and proof uses harmless markers. Defensive telemetry captures suspicious probes with useful user, IP, route, request ID, and outcome fields.
+Controls are enforced server-side, framework defaults are used safely, sensitive data is protected, dependencies are maintained, and tests or configuration prove the intended security behavior.
 
 ## What Bad Looks Like (Fail Criteria)
-Unknown exposed services, unowned subdomains, permissive cloud resources, unauthenticated admin panels, silent exploit attempts, missing audit logs, test accounts with excessive privileges, undocumented trust boundaries, and findings that only exist as theory without observed evidence.
+Security depends only on client-side checks, user input reaches sensitive sinks without validation or binding, secrets appear in source, authorization is missing at object or tenant boundaries, or configuration disables important protections.
 
-## Exploitation Proof of Concept
-Use a controlled proof pattern:
-```bash
-curl -sk -H 'X-ProdSec-Canary: audit-001' 'https://target/path?input=prodsec-canary'
-```
-Then prove impact with a bounded read, role transition, state change in a test object, alert event, or reflected/stored marker. If the exploit cannot be safely attempted, document `Unconfirmed` and the exact blocker.
+## Proof From Code
+Provide minimal source evidence instead of an exploit: file path, line number, relevant snippet, data-flow explanation, affected trust boundary, and why the framework does or does not mitigate the issue.
 
 ## Edge Cases & Hidden Traps
-Second-order payloads may trigger in admin exports, notifications, PDFs, or background jobs. Race conditions require concurrent requests and state verification. Caching layers may leak personalized responses. Business logic bypass often appears in skipped workflow steps, negative quantities, coupon stacking, refund loops, or stale authorization decisions. Chained low-severity issues can become critical when combined.
+Check second-order data flows, background jobs, webhook handlers, admin-only routes, multi-tenant filters, cache keys, generated code, default middleware order, preview deployments, test fixtures, and CI-only behavior.
 
 ## Remediation
-Define asset ownership, scope inventory, test credentials, safe testing windows, rate limits, emergency stop contacts, and logging expectations. Require every finding to include exploit evidence, impact, fix owner, exact remediation, retest command, and residual risk.
+Use framework-native controls, parameterized APIs, centralized authorization helpers, safe defaults, secret managers, maintained dependencies, tests that fail before the fix, and deployment configuration that enforces the intended control.
 
 ## References
-- OWASP Web Security Testing Guide: https://owasp.org/www-project-web-security-testing-guide/
 - OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
-- MITRE ATT&CK: https://attack.mitre.org/
-- CWE Top 25: https://cwe.mitre.org/top25/
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- CWE: https://cwe.mitre.org/

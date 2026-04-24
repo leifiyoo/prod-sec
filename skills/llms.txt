@@ -1,1 +1,1 @@
-prod-sec: Authorized active security auditing skill for AI agents. Use for scoped security audits, vulnerability assessments, API/web testing, auth/session checks, crypto/secrets review, infrastructure hardening, DevSecOps review, and evidence-backed reporting. Canonical entry point: ../SKILL.md.
+prod-sec: Defensive secure-code-review skill for AI agents. Use for repository audits, secure coding review, dependency review, secrets review, hardening guidance, DevSecOps review, and evidence-backed reporting. Canonical entry point: ../SKILL.md.

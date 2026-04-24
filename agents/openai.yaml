@@ -1,8 +1,8 @@
 interface:
   display_name: "ProdSec"
-  short_description: "Authorized active security auditing"
+  short_description: "Defensive secure code review"
   brand_color: "#111827"
-  default_prompt: "Use $prod-sec to run an authorized safe-mode security audit of my scoped web app and generate a findings report."
+  default_prompt: "Use $prod-sec to review my local repository for security issues and generate a prioritized findings report."
 
 policy:
   allow_implicit_invocation: true

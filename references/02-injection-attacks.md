@@ -1,39 +1,33 @@
-# Injection Attacks
+# Injection Risk Review
 
 ## What to Check
-Test SQL, NoSQL, OS command, LDAP, XML, template, expression language, log, CRLF, header, CSV/formula injection, insecure deserialization, RCE, prototype pollution sinks, memory-safety exposed parsers, and secure error handling.
+Review code for string-built SQL/NoSQL/LDAP/command/XML queries, unsafe template evaluation, deserialization boundaries, and missing parameter binding. Use local static analysis signals only.
 
-## How to Test (Active)
-1. Run:
-   `python3 scripts/web/sqli_test.py https://target/search --param q --safe-mode`
-   `python3 scripts/api/api_fuzz.py https://target/api/items --safe-mode`
-2. With authorization, invoke sqlmap:
-   `sqlmap -u 'https://target/item?id=1' --batch --risk=1 --level=2 --safe-url=https://target/health`
-3. Try manual payloads: `' OR '1'='1`, `") || true || ("`, `{"$ne":null}`, `;id`, `| whoami`, `${7*7}`, `{{7*7}}`, `*)(uid=*))(|(uid=*`, `<!ENTITY xxe SYSTEM "file:///etc/hostname">`.
-4. Compare status, length, timing, error text, and semantic changes against a baseline.
+## How to Test (Defensive)
+1. Read the relevant source files, routes, handlers, middleware, configuration, and tests.
+2. Run local helpers when relevant:
+   - `python3 scripts/code/static_code_audit.py PATH_TO_REPO --json-out static-findings.json`
+   - `python3 scripts/code/secrets_audit.py PATH_TO_REPO --json-out secret-findings.json`
+   - `python3 scripts/code/dependency_audit.py PATH_TO_REPO --json-out dependency-findings.json`
+3. Confirm each signal by inspecting surrounding code and framework behavior.
+4. Classify uncertain items as `Needs Review`; classify only source-backed issues as `Confirmed`.
 
 ## What Good Looks Like (Pass Criteria)
-Parameterized queries, allowlisted commands, no shell interpolation, safe XML parser settings, schema validation, context-aware escaping, generic errors, structured logs that neutralize control characters, and deserializers restricted to trusted types.
+Controls are enforced server-side, framework defaults are used safely, sensitive data is protected, dependencies are maintained, and tests or configuration prove the intended security behavior.
 
 ## What Bad Looks Like (Fail Criteria)
-Database error messages, time delay on sleep payloads, boolean response differences, command output in responses, template math evaluation, stack traces with query fragments, NoSQL operator acceptance, XML entity expansion, unsafe Java/PHP/Python deserialization markers, and CSV cells beginning with formula characters in exports.
+Security depends only on client-side checks, user input reaches sensitive sinks without validation or binding, secrets appear in source, authorization is missing at object or tenant boundaries, or configuration disables important protections.
 
-## Exploitation Proof of Concept
-Use a non-destructive boolean SQLi check:
-```bash
-curl -sk 'https://target/item?id=1%20AND%201=1'
-curl -sk 'https://target/item?id=1%20AND%201=2'
-```
-Different data with identical auth and route confirms injection. For time-based proof, use a one-second sleep only with approval and record the baseline delta.
+## Proof From Code
+Provide minimal source evidence instead of an exploit: file path, line number, relevant snippet, data-flow explanation, affected trust boundary, and why the framework does or does not mitigate the issue.
 
 ## Edge Cases & Hidden Traps
-Second-order injection appears when stored names, filenames, or profile fields are later used in reports or admin SQL. ORMs can be safe until raw query helpers are used. JSON-to-query translators may expose NoSQL operators. Deserialization may be reachable only through queues, cookies, or signed-but-not-encrypted state. Log injection can poison SIEM parsing.
+Check second-order data flows, background jobs, webhook handlers, admin-only routes, multi-tenant filters, cache keys, generated code, default middleware order, preview deployments, test fixtures, and CI-only behavior.
 
 ## Remediation
-Use parameterized queries and typed query builders. Remove shell execution or pass arguments as arrays with allowlists. Disable XML external entities and DTDs. Reject unknown JSON fields and NoSQL operators from client input. Use safe serializers, signed schema-bound messages, and per-context output encoding. Add regression tests with the exact payloads that reproduced the issue.
+Use framework-native controls, parameterized APIs, centralized authorization helpers, safe defaults, secret managers, maintained dependencies, tests that fail before the fix, and deployment configuration that enforces the intended control.
 
 ## References
-- OWASP Injection: https://owasp.org/Top10/A03_2021-Injection/
-- CWE-89 SQL Injection: https://cwe.mitre.org/data/definitions/89.html
-- CWE-78 OS Command Injection: https://cwe.mitre.org/data/definitions/78.html
-- PortSwigger SSTI: https://portswigger.net/web-security/server-side-template-injection
+- OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- CWE: https://cwe.mitre.org/

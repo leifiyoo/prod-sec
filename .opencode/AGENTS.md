@@ -2,6 +2,6 @@
 
 Read the root `SKILL.md` first.
 
-Use this repository as a responsible security auditing skill. Active scripts must be used only against authorized targets and should start in `--safe-mode`. Findings must include evidence, impact, remediation, and retest steps.
+Use this repository as a defensive secure-code-review skill. Scripts must operate on local repositories and findings must include evidence, impact, remediation, and safe retest steps.
 
-Do not assist with unauthorized testing, persistence, evasion, malware, credential theft, destructive testing, or real data exfiltration.
+Do not assist with exploit payloads, brute force, recon, unauthorized testing, persistence, evasion, malware, credential theft, destructive testing, or real data exfiltration.

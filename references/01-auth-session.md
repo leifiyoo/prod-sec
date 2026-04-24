@@ -1,40 +1,33 @@
-# Authentication, Authorization, and Session Management
+# Authentication And Session Review
 
 ## What to Check
-Test login, signup, password reset, MFA, session issuance, refresh tokens, logout, remember-me, OAuth/OIDC, SSO, RBAC, object authorization, tenant isolation, account recovery, secure defaults, least privilege, defense in depth, and secure error handling.
+Review login, registration, password reset, MFA, OAuth/OIDC, cookies, token lifetime, session rotation, logout, privilege checks, and account recovery flows from source and config.
 
-## How to Test (Active)
-1. Run:
-   `python3 scripts/auth/bruteforce_sim.py https://target/login --username test@example.com --wordlist small.txt --safe-mode`
-   `python3 scripts/auth/session_fixation_test.py https://target --safe-mode`
-   `python3 scripts/auth/mfa_bypass_test.py https://target --safe-mode`
-   `python3 scripts/auth/oauth_test.py https://target --safe-mode`
-2. Use `curl -isk` to compare authenticated and unauthenticated access to sensitive routes.
-3. Replay object requests with lower-privileged accounts to test BOLA/IDOR.
-4. Attempt safe OAuth abuse: open redirect in `redirect_uri`, missing `state`, token leakage in fragments/logs, algorithm confusion in JWTs.
-5. Test logout invalidates server-side session and refresh tokens.
+## How to Test (Defensive)
+1. Read the relevant source files, routes, handlers, middleware, configuration, and tests.
+2. Run local helpers when relevant:
+   - `python3 scripts/code/static_code_audit.py PATH_TO_REPO --json-out static-findings.json`
+   - `python3 scripts/code/secrets_audit.py PATH_TO_REPO --json-out secret-findings.json`
+   - `python3 scripts/code/dependency_audit.py PATH_TO_REPO --json-out dependency-findings.json`
+3. Confirm each signal by inspecting surrounding code and framework behavior.
+4. Classify uncertain items as `Needs Review`; classify only source-backed issues as `Confirmed`.
 
 ## What Good Looks Like (Pass Criteria)
-Uniform errors, lockout or throttling, MFA enforced server-side, session ID regenerated after auth, cookies use `HttpOnly; Secure; SameSite`, refresh tokens rotate, role checks occur per object and per action, OAuth validates issuer/audience/nonce/state/PKCE and exact redirect URI.
+Controls are enforced server-side, framework defaults are used safely, sensitive data is protected, dependencies are maintained, and tests or configuration prove the intended security behavior.
 
 ## What Bad Looks Like (Fail Criteria)
-User enumeration, no rate limit, session ID unchanged after login, MFA only on UI routes, password reset tokens reusable or long-lived, predictable IDs, tenant ID accepted from client, JWT `alg=none` accepted, broad wildcard redirect URIs, cookies missing security attributes, logout only deletes client cookie.
+Security depends only on client-side checks, user input reaches sensitive sinks without validation or binding, secrets appear in source, authorization is missing at object or tenant boundaries, or configuration disables important protections.
 
-## Exploitation Proof of Concept
-Use two authorized test users. Create an object as User A, then request it as User B:
-```bash
-curl -isk -H 'Cookie: session=USER_B' 'https://target/api/invoices/USER_A_OBJECT_ID'
-```
-A `200` with User A data proves broken object-level authorization. For fixation, set a pre-login cookie and verify the same session value remains privileged after login.
+## Proof From Code
+Provide minimal source evidence instead of an exploit: file path, line number, relevant snippet, data-flow explanation, affected trust boundary, and why the framework does or does not mitigate the issue.
 
 ## Edge Cases & Hidden Traps
-Check background APIs used by mobile clients, GraphQL resolvers, export endpoints, websocket channels, cached authorization, soft-deleted objects, cross-tenant search, admin impersonation, stale invite links, password reset race conditions, OAuth mix-up, and MFA bypass through backup codes or legacy endpoints.
+Check second-order data flows, background jobs, webhook handlers, admin-only routes, multi-tenant filters, cache keys, generated code, default middleware order, preview deployments, test fixtures, and CI-only behavior.
 
 ## Remediation
-Centralize authorization on server-side policy checks. Regenerate sessions on privilege changes. Store sessions server-side or use short-lived signed tokens with rotation. Enforce MFA and recovery policies in backend workflows. Use exact OAuth redirect URI matching, PKCE, nonce/state, strict issuer/audience checks, and refresh-token rotation.
+Use framework-native controls, parameterized APIs, centralized authorization helpers, safe defaults, secret managers, maintained dependencies, tests that fail before the fix, and deployment configuration that enforces the intended control.
 
 ## References
-- OWASP ASVS V2/V3/V4: https://owasp.org/www-project-application-security-verification-standard/
-- OWASP API1 BOLA: https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
-- CWE-287 Improper Authentication: https://cwe.mitre.org/data/definitions/287.html
-- CWE-862 Missing Authorization: https://cwe.mitre.org/data/definitions/862.html
+- OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- CWE: https://cwe.mitre.org/

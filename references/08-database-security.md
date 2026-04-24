@@ -1,40 +1,33 @@
-# Database Security
+# Database Security Review
 
 ## What to Check
-Test database access control, network exposure, encryption, query security, row-level security, auditing, backup security, DLP, hardening, monitoring, account privilege, credential storage, migration safety, and data retention.
+Review database users, migrations, row-level access, tenant filters, encryption indicators, backup handling, audit logging, and query construction.
 
-## How to Test (Active)
-1. Use application-level scripts first:
-   `python3 scripts/web/sqli_test.py https://target/item --param id --safe-mode`
-   `python3 scripts/api/api_fuzz.py https://target/api/search --safe-mode`
-2. With approved DB credentials, verify least privilege:
-   `SELECT current_user;`
-   `SHOW grants;` or DB-specific equivalent.
-3. Attempt authorized read/write boundaries with test data only.
-4. Check backups, snapshots, replicas, logs, and exports for encryption and access control.
-5. Validate audit logs for failed login, privilege change, sensitive read, export, and schema change events.
+## How to Test (Defensive)
+1. Read the relevant source files, routes, handlers, middleware, configuration, and tests.
+2. Run local helpers when relevant:
+   - `python3 scripts/code/static_code_audit.py PATH_TO_REPO --json-out static-findings.json`
+   - `python3 scripts/code/secrets_audit.py PATH_TO_REPO --json-out secret-findings.json`
+   - `python3 scripts/code/dependency_audit.py PATH_TO_REPO --json-out dependency-findings.json`
+3. Confirm each signal by inspecting surrounding code and framework behavior.
+4. Classify uncertain items as `Needs Review`; classify only source-backed issues as `Confirmed`.
 
 ## What Good Looks Like (Pass Criteria)
-DB not internet-exposed, app account has minimal privileges, row-level or tenant constraints enforced, TLS required, backups encrypted and access-controlled, sensitive columns encrypted/tokenized, audit logs immutable, migrations reviewed, and DLP alerts on bulk export.
+Controls are enforced server-side, framework defaults are used safely, sensitive data is protected, dependencies are maintained, and tests or configuration prove the intended security behavior.
 
 ## What Bad Looks Like (Fail Criteria)
-Public database ports, shared admin credentials, app user can alter schema or read all tenants, unencrypted backups, sensitive data in logs, no query audit trail, disabled TLS, weak passwords, snapshots shared publicly, and application filters relied on instead of database constraints.
+Security depends only on client-side checks, user input reaches sensitive sinks without validation or binding, secrets appear in source, authorization is missing at object or tenant boundaries, or configuration disables important protections.
 
-## Exploitation Proof of Concept
-With two tenants and approved credentials, attempt:
-```sql
-SELECT * FROM invoices WHERE tenant_id = 'other-test-tenant';
-```
-If data is returned to a role that should not access it, tenant isolation is broken. For app-level proof, use IDOR requests to retrieve another tenant's records.
+## Proof From Code
+Provide minimal source evidence instead of an exploit: file path, line number, relevant snippet, data-flow explanation, affected trust boundary, and why the framework does or does not mitigate the issue.
 
 ## Edge Cases & Hidden Traps
-Check read replicas, analytics warehouses, materialized views, search indexes, cache stores, message queues, BI exports, support tooling, and admin consoles. Backups may have weaker IAM than production. Soft-delete tables and audit logs often retain sensitive data outside normal authorization paths.
+Check second-order data flows, background jobs, webhook handlers, admin-only routes, multi-tenant filters, cache keys, generated code, default middleware order, preview deployments, test fixtures, and CI-only behavior.
 
 ## Remediation
-Restrict DB networks, enforce TLS, rotate credentials, split app roles by capability, use row-level security or tenant constraints, encrypt backups with managed keys, audit sensitive operations, redact logs, lock down replicas/exports, and test restore processes with access controls intact.
+Use framework-native controls, parameterized APIs, centralized authorization helpers, safe defaults, secret managers, maintained dependencies, tests that fail before the fix, and deployment configuration that enforces the intended control.
 
 ## References
-- OWASP Query Parameterization: https://cheatsheetseries.owasp.org/cheatsheets/Query_Parameterization_Cheat_Sheet.html
-- PostgreSQL RLS: https://www.postgresql.org/docs/current/ddl-rowsecurity.html
-- CIS Database Benchmarks: https://www.cisecurity.org/cis-benchmarks
-- CWE-200 Exposure of Sensitive Information: https://cwe.mitre.org/data/definitions/200.html
+- OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- CWE: https://cwe.mitre.org/
