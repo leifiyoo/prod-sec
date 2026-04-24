@@ -130,6 +130,20 @@ prod-sec/
 
 Run probes only against authorized targets.
 
+Install the skill with the skills CLI:
+
+```bash
+npx skills add leifiyoo/prod-sec
+```
+
+For non-interactive setup across supported agents:
+
+```bash
+npx skills add leifiyoo/prod-sec --yes --global
+```
+
+Then ask your AI agent to use `prod-sec` for an authorized target.
+
 ```bash
 # Recon
 bash scripts/recon/dns_recon.sh example.com --safe-mode
@@ -164,6 +178,23 @@ source ./skill.sh prod-sec
 ```
 
 Detailed testing guidance is loaded progressively from `references/` only when relevant.
+
+## skills.sh Discovery
+
+This repository is structured for the skills CLI:
+
+```bash
+npx skills add leifiyoo/prod-sec
+npx skills add leifiyoo/prod-sec --yes --global
+```
+
+`skills.sh` listings are driven by anonymous aggregate install telemetry from the skills CLI. A new repository may not appear immediately after publishing; it should become eligible after users install it with `npx skills add leifiyoo/prod-sec` and the leaderboard data refreshes. No separate metadata file is required for basic discovery.
+
+To opt out of telemetry during local testing:
+
+```bash
+DISABLE_TELEMETRY=1 npx skills add leifiyoo/prod-sec
+```
 
 ## Phased Workflow
 
